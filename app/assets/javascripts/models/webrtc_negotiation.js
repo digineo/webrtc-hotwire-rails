@@ -50,9 +50,7 @@ export default class WebrtcNegotiation {
     await this.peerConnection.setLocalDescription(description)
 
     this.signaller.signal({
-      type: (
-        this.peerConnection.localDescription ? 'description' : undefined
-      ),
+      type: this.peerConnection.localDescription ? 'description' : undefined,
       to: this.otherClient.id,
       from: this.client.id,
       description: this.peerConnection.localDescription
@@ -86,13 +84,10 @@ export default class WebrtcNegotiation {
   }
 
   get readyToReceiveOffer () {
-    return (
-      !this.makingOffer &&
-      (
+    return !this.makingOffer && (
         this.peerConnection.signalingState === 'stable' ||
         this.isSettingRemoteAnswerPending
       )
-    )
   }
 
   collides (description) {
