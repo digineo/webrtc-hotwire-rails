@@ -2,6 +2,7 @@ const RETRY_LIMIT = 10
 
 export default class WebrtcNegotiation {
   constructor ({ client, otherClient, polite, signaller }) {
+    console.log({ id: client.id, polite })
     this.client = client
     this.otherClient = otherClient
     this.polite = polite
@@ -31,12 +32,21 @@ export default class WebrtcNegotiation {
     try {
       if (this.ignore(description)) return
 
+      const { signalingState, localDescription, remoteDescription } = this.peerConnection
+      console.log({
+        description: description.type,
+        state: signalingState,
+        local: !!localDescription,
+        remote: !!remoteDescription,
+      })
       await this.setRemoteDescription(description)
 
       if (description.type === 'offer') {
         await this.setLocalDescription(await this.peerConnection.createAnswer())
       }
     } catch (error) {
+      console.error(error)
+
       if (this.retryCount <= RETRY_LIMIT) {
         this.initiateManualRollback()
         this.retryCount++
