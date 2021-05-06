@@ -47,6 +47,10 @@ export default class WebrtcNegotiation {
     } catch (error) {
       console.error(error)
 
+      if (error.name === "InvalidStateError" && error.message === "Description type incompatible with current signalling state") {
+        return // Safari 14.1
+      }
+
       if (this.retryCount <= RETRY_LIMIT) {
         this.initiateManualRollback()
         this.retryCount++
@@ -148,6 +152,12 @@ export default class WebrtcNegotiation {
       })
     }
 
+    this._oniceconnectionstatechange = () => {
+      if (this.peerConnection.iceConnectionState === "failed" && "restartIce" in this.peerConnection) {
+        this.peerConnection.restartIce()
+      }
+    }
+
     this._onconnectionstatechange = (event) => {
       if (this.peerConnection.connectionState === 'connected') {
         this.retryCount = 0
@@ -156,6 +166,7 @@ export default class WebrtcNegotiation {
 
     this._ontrack = (event) => this.otherClient.broadcast('track', event)
 
+    this.peerConnection.addEventListener('iceconnectionstatechange', this._oniceconnectionstatechange)
     this.peerConnection.addEventListener('negotiationneeded', this._onnegotiationneeded)
     this.peerConnection.addEventListener('icecandidate', this._onicecandidate)
     this.peerConnection.addEventListener('connectionstatechange', this._onconnectionstatechange)
@@ -164,6 +175,7 @@ export default class WebrtcNegotiation {
 
   teardownPeerConnection () {
     this.peerConnection.close()
+    this.peerConnection.removeEventListener('iceconnectionstatechange', this._oniceconnectionstatechange)
     this.peerConnection.removeEventListener('negotiationneeded', this._onnegotiationneeded)
     this.peerConnection.removeEventListener('icecandidate', this._onicecandidate)
     this.peerConnection.removeEventListener('connectionstatechange', this._onconnectionstatechange)
