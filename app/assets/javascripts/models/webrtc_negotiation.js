@@ -50,6 +50,7 @@ export default class WebrtcNegotiation {
       if (this.retryCount <= RETRY_LIMIT) {
         this.initiateManualRollback()
         this.retryCount++
+        this.setDescription(description)
       } else {
         console.error(`Negotiation failed after ${this.retryCount} retries`)
       }
@@ -109,11 +110,11 @@ export default class WebrtcNegotiation {
 
   initiateManualRollback() {
     this.restart()
-    this.signaller.signal({
-      type: 'restart',
-      to: this.otherClient.id,
-      from: this.client.id
-    })
+    // this.signaller.signal({
+    //   type: 'restart',
+    //   to: this.otherClient.id,
+    //   from: this.client.id
+    // })
   }
 
   restart() {
