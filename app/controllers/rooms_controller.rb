@@ -3,7 +3,7 @@ class RoomsController < ApplicationController
   end
 
   def create
-    redirect_to room_path(SecureRandom.uuid)
+    redirect_to room_path(42)
   end
 
   def show
